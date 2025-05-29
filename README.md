@@ -332,3 +332,31 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 Your Name - [your-email@example.com](mailto:your-email@example.com)
 
 Project Link: [https://github.com/yourusername/taskflow](https://github.com/yourusername/taskflow)
+
+## Rate Limiting
+
+The API implements rate limiting to prevent abuse. Each client is limited to:
+
+- 5 requests per 60 seconds for most endpoints
+
+When a rate limit is exceeded, the API will respond with:
+- Status code: `429 Too Many Requests`
+- Response body:
+```json
+{
+    "error": "Too many requests. Please try again later.",
+    "retry_after_seconds": 42
+}
+```
+
+Rate limit headers are included in all responses:
+- `X-RateLimit-Limit`: Maximum number of requests allowed in the time window
+- `X-RateLimit-Remaining`: Number of requests remaining in the current time window
+- `Retry-After`: Seconds to wait before making another request (only included in 429 responses)
+
+### Rate Limited Endpoints
+
+The following endpoints are subject to rate limiting:
+- POST `/api/register/` - User registration
+- GET/POST `/api/tasks/` - List and create tasks
+- GET/PUT/DELETE `/api/tasks/{id}/` - Task details, updates, and deletion

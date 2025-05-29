@@ -11,12 +11,17 @@ from .serializers import (
     UserSerializer,
     TaskSerializer,
 )
+from .utils import rate_limit
 
 
 class RegisterView(generics.CreateAPIView):
     queryset = User.objects.all()
     permission_classes = (permissions.AllowAny,)
     serializer_class = RegisterSerializer
+
+    @rate_limit(requests=5, interval=60)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
 
 
 class UserListView(generics.ListAPIView):
@@ -71,6 +76,14 @@ class TaskListCreateView(generics.ListCreateAPIView):
     ordering_fields = ["created_at", "updated_at", "priority", "status"]
     ordering = ["-created_at"]
 
+    @rate_limit(requests=5, interval=60)
+    def post(self, request, *args, **kwargs):
+        return super().post(request, *args, **kwargs)
+    
+    @rate_limit(requests=5, interval=60)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
     def get_queryset(self):
         if self.request.user.is_staff:  # Admin users can see all tasks
             queryset = Task.objects.all()
@@ -103,6 +116,18 @@ class TaskDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = TaskSerializer
     lookup_field = "id"
+
+    @rate_limit(requests=5, interval=60)
+    def get(self, request, *args, **kwargs):
+        return super().get(request, *args, **kwargs)
+
+    @rate_limit(requests=5, interval=60)
+    def put(self, request, *args, **kwargs):
+        return super().put(request, *args, **kwargs)
+
+    @rate_limit(requests=5, interval=60)
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
 
     def get_queryset(self):
         if self.request.user.is_staff:
