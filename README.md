@@ -27,10 +27,14 @@ TaskFlow is a task management system that allows users to create projects, manag
   "password": "securepassword",
   "password2": "securepassword",
   "first_name": "John",
-  "last_name": "Doe"
+  "last_name": "Doe",
+  "photo": "file (optional)"
 }
 ```
 
+- **Notes**:
+  - Photo must be less than 2MB
+  - Supported formats: JPG, JPEG, PNG, WebP
 - **Response**: 201 Created
 
 ```json
@@ -38,11 +42,54 @@ TaskFlow is a task management system that allows users to create projects, manag
   "username": "johndoe",
   "email": "john@example.com",
   "first_name": "John",
-  "last_name": "Doe"
+  "last_name": "Doe",
+  "photo": "string (URL)"
 }
 ```
 
-#### Get/Update User Profile
+#### Get Token
+
+- **Method**: POST
+- **Endpoint**: `/api/token/`
+- **Request Body**:
+
+```json
+{
+  "username": "string",
+  "password": "string"
+}
+```
+
+- **Response**: 200 OK
+
+```json
+{
+  "access": "string",
+  "refresh": "string"
+}
+```
+
+#### Refresh Token
+
+- **Method**: POST
+- **Endpoint**: `/api/token/refresh/`
+- **Request Body**:
+
+```json
+{
+  "refresh": "string"
+}
+```
+
+- **Response**: 200 OK
+
+```json
+{
+  "access": "string"
+}
+```
+
+### Get/Update User Profile
 
 - **Method**: GET/PUT
 - **Endpoint**: `/api/user/`
@@ -54,7 +101,8 @@ TaskFlow is a task management system that allows users to create projects, manag
   "email": "john@example.com",
   "first_name": "John",
   "last_name": "Doe",
-  "bio": "Software Developer"
+  "bio": "Software Developer",
+  "photo": "file (optional)"
 }
 ```
 
@@ -67,7 +115,8 @@ TaskFlow is a task management system that allows users to create projects, manag
   "email": "john@example.com",
   "first_name": "John",
   "last_name": "Doe",
-  "bio": "Software Developer"
+  "bio": "Software Developer",
+  "photo": "string (URL)"
 }
 ```
 
@@ -340,16 +389,19 @@ The API implements rate limiting to prevent abuse. Each client is limited to:
 - 5 requests per 60 seconds for most endpoints
 
 When a rate limit is exceeded, the API will respond with:
+
 - Status code: `429 Too Many Requests`
 - Response body:
+
 ```json
 {
-    "error": "Too many requests. Please try again later.",
-    "retry_after_seconds": 42
+  "error": "Too many requests. Please try again later.",
+  "retry_after_seconds": 42
 }
 ```
 
 Rate limit headers are included in all responses:
+
 - `X-RateLimit-Limit`: Maximum number of requests allowed in the time window
 - `X-RateLimit-Remaining`: Number of requests remaining in the current time window
 - `Retry-After`: Seconds to wait before making another request (only included in 429 responses)
@@ -357,6 +409,75 @@ Rate limit headers are included in all responses:
 ### Rate Limited Endpoints
 
 The following endpoints are subject to rate limiting:
+
 - POST `/api/register/` - User registration
 - GET/POST `/api/tasks/` - List and create tasks
 - GET/PUT/DELETE `/api/tasks/{id}/` - Task details, updates, and deletion
+
+## Admin Endpoints
+
+### List Users (Admin Only)
+
+- **Method**: GET
+- **URL**: `/api/users/`
+- **Description**: Get list of all users (admin only)
+- **Headers**:
+  - Authorization: Bearer {access_token}
+- **Response**: 200 OK
+  ```json
+  {
+    "count": "integer",
+    "results": [
+      {
+        "id": "integer",
+        "username": "string",
+        "email": "string",
+        "first_name": "string",
+        "last_name": "string",
+        "photo": "string (URL)",
+        "is_active": "boolean",
+        "date_joined": "datetime",
+        "last_login": "datetime"
+      }
+    ]
+  }
+  ```
+
+### Delete User (Admin Only)
+
+- **Method**: DELETE
+- **URL**: `/api/admin/users/{user_id}/delete/`
+- **Description**: Delete a user (admin only)
+- **Headers**:
+  - Authorization: Bearer {access_token}
+- **Response**: 200 OK
+  ```json
+  {
+    "message": "User username has been deleted successfully"
+  }
+  ```
+
+### Bulk Delete (Admin Only)
+
+- **Method**: DELETE
+- **URL**: `/api/admin/bulk-delete/`
+- **Description**: Delete multiple users and/or tasks (admin only)
+- **Headers**:
+  - Authorization: Bearer {access_token}
+- **Request Body**:
+  ```json
+  {
+    "user_ids": ["integer"],
+    "task_ids": ["integer"]
+  }
+  ```
+- **Response**: 200 OK
+  ```json
+  {
+    "message": "Bulk deletion completed",
+    "deleted_counts": {
+      "users": "integer",
+      "tasks": "integer"
+    }
+  }
+  ```

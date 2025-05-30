@@ -1,10 +1,34 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.core.exceptions import ValidationError
+import os
+
+
+def validate_image_file_extension(value):
+    valid_extensions = [".jpg", ".jpeg", ".png", ".webp"]
+    ext = os.path.splitext(value.name)[1].lower()
+    if ext not in valid_extensions:
+        raise ValidationError(
+            "Unsupported file extension. Allowed extensions are: jpg, jpeg, png, webp"
+        )
+
+
+def validate_file_size(value):
+    filesize = value.size
+    if filesize > 2 * 1024 * 1024:  # 2MB
+        raise ValidationError("Maximum file size allowed is 2MB")
 
 
 class User(AbstractUser):
     bio = models.TextField(max_length=500, blank=True)
+    photo = models.ImageField(
+        upload_to="user_photos/",
+        null=True,
+        blank=True,
+        validators=[validate_image_file_extension, validate_file_size],
+        help_text="Upload a profile photo (max 2MB, formats: JPG, PNG, WebP)",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

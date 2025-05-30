@@ -18,11 +18,13 @@ class RegisterSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "photo",
         )
         extra_kwargs = {
             "email": {"required": True},
             "first_name": {"required": True},
             "last_name": {"required": True},
+            "photo": {"required": False},
         }
 
     def validate(self, attrs):
@@ -50,6 +52,7 @@ class UserSerializer(serializers.ModelSerializer):
             "email",
             "first_name",
             "last_name",
+            "photo",
             "is_active",
             "date_joined",
             "last_login",
