@@ -120,64 +120,6 @@ TaskFlow is a task management system that allows users to create projects, manag
 }
 ```
 
-### Projects
-
-#### List/Create Projects
-
-- **Method**: GET/POST
-- **Endpoint**: `/api/projects/`
-- **Authentication**: Required
-- **Request Body (POST)**:
-
-```json
-{
-  "title": "Web Application Development",
-  "description": "Building a new web application",
-  "member_ids": [2, 3]
-}
-```
-
-- **Response**: 200 OK (GET), 201 Created (POST)
-
-```json
-{
-  "id": 1,
-  "title": "Web Application Development",
-  "description": "Building a new web application",
-  "owner": {
-    "id": 1,
-    "username": "johndoe",
-    "email": "john@example.com"
-  },
-  "members": [
-    {
-      "id": 2,
-      "username": "janedoe",
-      "email": "jane@example.com"
-    }
-  ],
-  "created_at": "2024-03-14T12:00:00Z",
-  "updated_at": "2024-03-14T12:00:00Z"
-}
-```
-
-#### Get/Update/Delete Project
-
-- **Method**: GET/PUT/DELETE
-- **Endpoint**: `/api/projects/{id}/`
-- **Authentication**: Required
-- **Request Body (PUT)**:
-
-```json
-{
-  "title": "Updated Project Title",
-  "description": "Updated project description",
-  "member_ids": [2, 3, 4]
-}
-```
-
-- **Response**: 200 OK (GET/PUT), 204 No Content (DELETE)
-
 ### Tasks
 
 #### List/Create Tasks
@@ -186,21 +128,18 @@ TaskFlow is a task management system that allows users to create projects, manag
 - **Endpoint**: `/api/tasks/`
 - **Authentication**: Required
 - **Query Parameters (GET)**:
-  - project_id: Filter tasks by project
   - status: Filter by status (TODO, IN_PROGRESS, DONE)
   - priority: Filter by priority (LOW, MEDIUM, HIGH)
-  - assigned_to: Filter by assigned user ID
+  - created_by: Filter by creator user ID (admin only)
 - **Request Body (POST)**:
 
 ```json
 {
   "title": "Implement User Authentication",
   "description": "Set up JWT authentication",
-  "project_id": 1,
   "assigned_to_id": 2,
   "status": "TODO",
-  "priority": "HIGH",
-  "due_date": "2024-03-20T18:00:00Z"
+  "priority": "HIGH"
 }
 ```
 
@@ -211,10 +150,6 @@ TaskFlow is a task management system that allows users to create projects, manag
   "id": 1,
   "title": "Implement User Authentication",
   "description": "Set up JWT authentication",
-  "project": {
-    "id": 1,
-    "title": "Web Application Development"
-  },
   "assigned_to": {
     "id": 2,
     "username": "janedoe",
@@ -227,7 +162,6 @@ TaskFlow is a task management system that allows users to create projects, manag
   },
   "status": "TODO",
   "priority": "HIGH",
-  "due_date": "2024-03-20T18:00:00Z",
   "created_at": "2024-03-14T12:00:00Z",
   "updated_at": "2024-03-14T12:00:00Z"
 }
@@ -246,8 +180,7 @@ TaskFlow is a task management system that allows users to create projects, manag
   "description": "Updated task description",
   "assigned_to_id": 2,
   "status": "IN_PROGRESS",
-  "priority": "MEDIUM",
-  "due_date": "2024-03-21T18:00:00Z"
+  "priority": "MEDIUM"
 }
 ```
 
@@ -331,19 +264,32 @@ source venv/bin/activate  # On Windows: venv\Scripts\activate
 pip install -r requirements.txt
 ```
 
-4. Apply database migrations:
+4. Set up PostgreSQL:
+
+   - Install PostgreSQL if not already installed
+   - Create a new database named 'taskflow'
+   - Update database settings in taskflow/settings.py if needed
+
+5. Apply database migrations:
 
 ```bash
 python manage.py migrate
 ```
 
-5. Create a superuser:
+6. Create an admin user:
+
+```bash
+python manage.py createsuperadmin
+```
+
+- Default credentials: username=admin, password=admin123
+- You can create additional superusers with:
 
 ```bash
 python manage.py createsuperuser
 ```
 
-6. Run the development server:
+7. Run the development server:
 
 ```bash
 python manage.py runserver
@@ -356,12 +302,28 @@ The API will be available at `http://localhost:8000/api/`
 ```
 taskflow/
 ├── manage.py
+├── requirements.txt
+├── README.md
+├── media/
+│   └── user_photos/
 ├── taskflow/
 │   ├── __init__.py
 │   ├── settings.py
 │   ├── urls.py
-│   └── wsgi.py
-└── README.md
+│   ├── wsgi.py
+│   └── myapp/
+│       ├── __init__.py
+│       ├── admin.py
+│       ├── apps.py
+│       ├── models.py
+│       ├── serializers.py
+│       ├── urls.py
+│       ├── utils.py
+│       ├── views.py
+│       ├── management/
+│       │   └── commands/
+│       │       └── createsuperadmin.py
+│       └── migrations/
 ```
 
 ## Contributing
