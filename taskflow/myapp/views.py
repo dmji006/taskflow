@@ -88,8 +88,10 @@ class TaskListCreateView(generics.ListCreateAPIView):
     def get_queryset(self):
         if self.request.user.is_staff:  # Admin users can see all tasks
             queryset = Task.objects.all()
-        else:  # Regular users can only see their tasks
-            queryset = Task.objects.filter(created_by=self.request.user)
+        else:  # Regular users can see tasks they created or are assigned to
+            queryset = Task.objects.filter(
+                Q(created_by=self.request.user) | Q(assigned_to=self.request.user)
+            ).distinct()
 
         # Apply filters
         if queryset.exists():
