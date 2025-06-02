@@ -18,6 +18,11 @@ urlpatterns = [
         views.update_task_status,
         name="update-task-status",
     ),
+    path(
+        "tasks/<int:task_id>/assign/",
+        views.assign_task,
+        name="assign-task",
+    ),
     # Comment endpoints
     path(
         "tasks/<int:task_id>/comments/",
