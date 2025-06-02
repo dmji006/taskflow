@@ -62,7 +62,7 @@ class UserSerializer(serializers.ModelSerializer):
 
 class TaskSerializer(serializers.ModelSerializer):
     assigned_to = UserSerializer(read_only=True)
-    created_by = UserSerializer(read_only=True)
+    created_by = serializers.IntegerField(source="created_by.id", read_only=True)
     assigned_to_id = serializers.IntegerField(
         write_only=True, required=False, allow_null=True
     )
