@@ -18,6 +18,17 @@ urlpatterns = [
         views.update_task_status,
         name="update-task-status",
     ),
+    # Comment endpoints
+    path(
+        "tasks/<int:task_id>/comments/",
+        views.add_comment,
+        name="add-comment",
+    ),
+    path(
+        "comments/<int:comment_id>/",
+        views.delete_comment,
+        name="delete-comment",
+    ),
     # Admin deletion endpoints
     path(
         "admin/users/<int:user_id>/delete/",

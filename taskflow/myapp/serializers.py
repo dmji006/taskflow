@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
-from .models import User, Task
+from .models import User, Task, Comment
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -60,12 +60,22 @@ class UserSerializer(serializers.ModelSerializer):
         read_only_fields = ["id", "date_joined", "last_login"]
 
 
+class CommentSerializer(serializers.ModelSerializer):
+    user = serializers.CharField(source='user.username', read_only=True)
+    
+    class Meta:
+        model = Comment
+        fields = ('id', 'task', 'user', 'content', 'created_at', 'updated_at')
+        read_only_fields = ('id', 'task', 'created_at', 'updated_at')
+
+
 class TaskSerializer(serializers.ModelSerializer):
     assigned_to = serializers.CharField(source='assigned_to.username', read_only=True)
     created_by = serializers.IntegerField(source="created_by.id", read_only=True)
     assigned_to_id = serializers.IntegerField(
         write_only=True, required=False, allow_null=True
     )
+    comments = CommentSerializer(many=True, read_only=True)
 
     class Meta:
         model = Task
@@ -80,6 +90,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "priority",
             "created_at",
             "updated_at",
+            "comments"
         )
         read_only_fields = ("id", "created_at", "updated_at")
 

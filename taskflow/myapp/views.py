@@ -5,11 +5,12 @@ from rest_framework.response import Response
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated, IsAdminUser
 from django.db.models import Q
-from .models import User, Task
+from .models import User, Task, Comment
 from .serializers import (
     RegisterSerializer,
     UserSerializer,
     TaskSerializer,
+    CommentSerializer,
 )
 from .utils import rate_limit
 
@@ -196,6 +197,44 @@ def assign_task(request, task_id):
 
     task.save()
     return Response(TaskSerializer(task).data)
+
+
+# Comment Views
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def add_comment(request, task_id):
+    task = get_object_or_404(Task, id=task_id)
+    
+    # Check if user has permission to comment (creator or assigned user)
+    if request.user != task.created_by and request.user != task.assigned_to:
+        return Response(
+            {"error": "Only the task creator and assigned user can add comments"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    
+    serializer = CommentSerializer(data=request.data)
+    if serializer.is_valid():
+        serializer.save(task=task, user=request.user)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+@api_view(["DELETE"])
+@permission_classes([IsAuthenticated])
+def delete_comment(request, comment_id):
+    comment = get_object_or_404(Comment, id=comment_id)
+    
+    # Check if user has permission to delete the comment
+    if request.user != comment.user and not request.user.is_staff:
+        return Response(
+            {"error": "You can only delete your own comments"},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+    
+    comment.delete()
+    return Response(
+        {"message": "Comment deleted successfully"},
+        status=status.HTTP_200_OK,
+    )
 
 
 # Admin Deletion Views

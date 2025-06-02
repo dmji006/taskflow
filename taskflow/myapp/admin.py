@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import User, Task
+from .models import User, Task, Comment
 
 
 @admin.register(User)
@@ -22,3 +22,10 @@ class TaskAdmin(admin.ModelAdmin):
     list_filter = ("status", "priority", "created_at", "assigned_to")
     search_fields = ("title", "description", "created_by__username", "assigned_to__username")
     date_hierarchy = "created_at"
+
+
+@admin.register(Comment)
+class CommentAdmin(admin.ModelAdmin):
+    list_display = ('user', 'task', 'content', 'created_at')
+    list_filter = ('created_at', 'user')
+    search_fields = ('content', 'user__username', 'task__title')
