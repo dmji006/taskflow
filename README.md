@@ -115,8 +115,10 @@ TaskFlow is a task management system that allows users to create projects, manag
   "email": "john@example.com",
   "first_name": "John",
   "last_name": "Doe",
-  "bio": "Software Developer",
-  "photo": "string (URL)"
+  "photo": "string (URL)",
+  "is_active": true,
+  "date_joined": "2025-06-01T12:00:00Z",
+  "last_login": "2025-06-03T12:00:00Z"
 }
 ```
 
@@ -150,20 +152,13 @@ TaskFlow is a task management system that allows users to create projects, manag
   "id": 1,
   "title": "Implement User Authentication",
   "description": "Set up JWT authentication",
-  "assigned_to": {
-    "id": 2,
-    "username": "janedoe",
-    "email": "jane@example.com"
-  },
-  "created_by": {
-    "id": 1,
-    "username": "johndoe",
-    "email": "john@example.com"
-  },
+  "assigned_to": "janedoe",
+  "created_by": 1,
   "status": "TODO",
   "priority": "HIGH",
   "created_at": "2024-03-14T12:00:00Z",
-  "updated_at": "2024-03-14T12:00:00Z"
+  "updated_at": "2024-03-14T12:00:00Z",
+  "comments": []
 }
 ```
 
@@ -215,6 +210,47 @@ TaskFlow is a task management system that allows users to create projects, manag
 ```
 
 - **Response**: 200 OK
+
+#### Task Comments
+
+- **Method**: POST
+- **Endpoint**: `/api/tasks/{task_id}/comments/`
+- **Authentication**: Required
+- **Description**: Add a comment to a task (only task creator and assigned user can comment)
+- **Request Body**:
+
+```json
+{
+  "content": "string"
+}
+```
+
+- **Response**: 201 Created
+
+```json
+{
+  "id": 1,
+  "task": 1,
+  "user": "johndoe",
+  "content": "string",
+  "created_at": "2025-06-03T12:00:00Z",
+  "updated_at": "2025-06-03T12:00:00Z"
+}
+```
+
+#### Delete Comment
+
+- **Method**: DELETE
+- **Endpoint**: `/api/comments/{comment_id}/`
+- **Authentication**: Required
+- **Description**: Delete a comment (only comment creator and admins can delete)
+- **Response**: 200 OK
+
+```json
+{
+  "message": "Comment deleted successfully"
+}
+```
 
 ## Error Handling
 
@@ -307,11 +343,11 @@ taskflow/
 ├── media/
 │   └── user_photos/
 ├── taskflow/
-│   ├── __init__.py
-│   ├── settings.py
-│   ├── urls.py
-│   ├── wsgi.py
-│   └── myapp/
+    ├── __init__.py
+    ├── settings.py
+    ├── urls.py
+    ├── wsgi.py
+    ├── myapp/
 │       ├── __init__.py
 │       ├── admin.py
 │       ├── apps.py
